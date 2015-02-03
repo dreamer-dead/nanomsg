@@ -451,7 +451,7 @@ static void nn_process_option (struct nn_parse_context *ctx,
         case NN_OPT_LIST_APPEND_FMT:
             data_buf = strlen (argument) + strlen (opt->pointer);
             data = malloc (data_buf);
-#if defined NN_HAVE_WINDOWS
+#if defined NN_HAVE_WINDOWS && defined _TRUNCATE
             data_len = _snprintf_s (data, data_buf, _TRUNCATE, opt->pointer,
                 argument);
 #else

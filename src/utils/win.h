@@ -42,4 +42,56 @@ struct sockaddr_un {
 
 #define ssize_t int
 
+#ifdef NN_HAVE_MINGW
+/* Mingw doesn't have this stuff */
+#ifndef WSAID_CONNECTEX
+#define WSAID_CONNECTEX \
+    {0x25a207b9, 0xddf3, 0x4660, {0x8e,0xe9,0x76,0xe5,0x8c,0x74,0x06,0x3e}}
+#endif
+
+typedef BOOL WINAPI (*LPFN_CONNECTEX)(SOCKET s,
+                                      const struct sockaddr* name,
+                                      int namelen,
+                                      PVOID lpSendBuffer,
+                                      DWORD dwSendDataLength,
+                                      LPDWORD lpdwBytesSent,
+                                      LPOVERLAPPED lpOverlapped);
+
+typedef BOOL WINAPI (*LPFN_DISCONNECTEX)(SOCKET hSocket,
+                                         LPOVERLAPPED lpOverlapped,
+                                         DWORD dwFlags,
+                                         DWORD reserved);
+
+#ifndef MSG_WAITALL
+#define MSG_WAITALL 0x8 /* do not complete until packet is completely filled */
+#endif
+
+#if (_WIN32_WINNT >= 0x0600)
+#ifndef PIPE_ACCEPT_REMOTE_CLIENTS
+#define PIPE_ACCEPT_REMOTE_CLIENTS 0x0
+#endif
+
+#ifndef PIPE_REJECT_REMOTE_CLIENTS
+#define PIPE_REJECT_REMOTE_CLIENTS 0x8
+#endif
+
+typedef struct _OVERLAPPED_ENTRY {
+    ULONG_PTR lpCompletionKey;
+    LPOVERLAPPED lpOverlapped;
+    ULONG_PTR Internal;
+    DWORD dwNumberOfBytesTransferred;
+} OVERLAPPED_ENTRY, *LPOVERLAPPED_ENTRY;
+
+WINBASEAPI WINBOOL WINAPI GetQueuedCompletionStatusEx(
+    HANDLE hCompletionPort,
+    LPOVERLAPPED_ENTRY lpCompletionPortEntries,
+    ULONG ulCount,
+    PULONG ulNumEntriesRemoved,
+    DWORD dwMilliseconds,
+    WINBOOL fAlertable);
+
+WINBASEAPI WINBOOL WINAPI CancelIoEx(HANDLE hFile, LPOVERLAPPED lpOverlapped);
+#endif  /* if (_WIN32_WINNT >= 0x0600) */
+#endif  /* if defined NN_HAVE_MINGW */
+
 #endif
